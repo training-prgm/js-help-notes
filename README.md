@@ -337,22 +337,74 @@ function f(...args) {
 Rest parameters can be destructured (arrays only), that means that their data can be unpacked into distinct variables.
 Ex:
 ```
-function f(...[a, b, c]) {
+function add(...[a, b, c]) {
   return a + b + c;
 }
 
-f(1)          // NaN (b and c are undefined)
-f(1, 2, 3)    // 6
-f(1, 2, 3, 4) // 6 (the fourth parameter is not destructured)
+add(1)          // NaN (b and c are undefined)
+add(1, 2, 3)    // 6
+add(1, 2, 3, 4) // 6 (the fourth parameter is not destructured)
 ```
 
 ###### Note:
 JavaScript lets you call a function with an arbitrary array of arguments, using the apply() method of any function object.
 
 ```
-f.apply(null, [2, 3, 4]); // 6
+add.apply(null, [2, 3, 4]); // 6
 ```
-#### Spread syntax
+JavaScript lets you create anonymous functions and you can assign it to variables
+```
+var add = function(...[a, b, c]) {
+  return a + b + c;
+}
+```
+This is semantically equivalent to the function add() form.
+
+It's extremely powerful, as it lets you put a full function definition anywhere that you would normally put an expression. This enables all sorts of clever tricks. Here's a way of "hiding" some local variables — like block scope in C:
+```
+var a = 1;
+var b = 2;
+
+(function() {
+  var b = 3;
+  a += b;
+})();
+
+a; // 4
+b; // 2
+```
+JavaScript allows you to call functions recursively. This is particularly useful for dealing with tree structures, such as those found in the browser DOM.
+```
+function countChars(elm) {
+  if (elm.nodeType == 3) { // TEXT_NODE
+    return elm.nodeValue.length;
+  }
+  var count = 0;
+  for (var i = 0, child; child = elm.childNodes[i]; i++) {
+    count += countChars(child);
+  }
+  return count;
+}
+```
+This highlights a potential problem with anonymous functions: how do you call them recursively if they don't have a name? JavaScript lets you name function expressions for this.
+```
+var charsInBody = (function counter(elm) {
+  if (elm.nodeType == 3) { // TEXT_NODE
+    return elm.nodeValue.length;
+  }
+  var count = 0;
+  for (var i = 0, child; child = elm.childNodes[i]; i++) {
+    count += counter(child);
+  }
+  return count;
+})(document.body);
+```
+
+The name provided to a function expression as above is only available to the function's own scope. This allows more optimizations to be done by the engine and results in more readable code. The name also shows up in the debugger and some stack traces, which can save you time when debugging.
+
+Note that JavaScript functions are themselves objects — like everything else in JavaScript — and you can add or change properties on them just like we've seen earlier in the Objects section.
+
+## Spread syntax
 Spread syntax allows an iterable such as an array expression or string to be expanded in places where zero or more arguments (for function calls) or elements (for array literals) are expected, or an object expression to be expanded in places where zero or more key-value pairs (for object literals) are expected.
 
 Ex:
