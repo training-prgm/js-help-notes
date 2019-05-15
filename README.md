@@ -194,21 +194,285 @@ Note : You could also iterate over an array using a `for...in` loop, however thi
 ###### To append :
 `a.push(item);`
 
+##### Other lib methods:
+###### toString()
+Returns a string with the toString() of each element separated by commas.
 
+###### toLocaleString()
+Returns a string with the toLocaleString() of each element separated by commas.
 
+###### concat(item1[, item2[, ...[, itemN]]])
+Returns a new array with the items added on to it.
 
+###### join(delimiter)
+Converts the array to a string — with values delimited by the `delimiter` param
 
+###### pop()
+Removes and returns the last item.
 
+###### push(item1, ..., itemN)
+Appends items to the end of the array.
 
+###### reverse()
+Reverses the array.
 
+###### shift()
+Removes and returns the first item.
 
+###### slice(start[, end])
+Returns a sub-array.
 
+###### splice(start, delcount[, item1[, ...[, itemN]]])
+Lets you modify an array by deleting a section and replacing it with more items.
 
+###### sort([cmpfn])
+Takes an optional comparison function.
 
+###### unshift(item1[, item2[, ...[, itemN]]])
+Prepends items to the start of the array.
 
+## Functions
 
+###### Sample
+Ex:
+```
+function add(x, y) {
+  var total = x + y;
+  return total;
+}
+```
+###### Note:
+1. The `return` statement can be used to return a value at any time, terminating the function. If no return statement is used (or an empty return with no value), JavaScript returns undefined.
+2. calling a function without passing the parameters it expects, in which case they will be set to undefined.
+3. functions have access to an additional variable inside their body called arguments, which is an array-like object holding all of the values passed to the function
 
+###### Functions Arguments Object
+Ex: 
+```
+function add() {
+  var sum = 0;
+  for (var i = 0, j = arguments.length; i < j; i++) {
+    sum += arguments[i];
+  }
+  return sum;
+}
 
+add(2, 3, 4, 5); // 14
+```
+
+##### Functions Rest Parameters
+Ex:
+```
+function sum(...theArgs) {
+  return theArgs.reduce((previous, current) => {
+    return previous + current;
+  });
+}
+
+console.log(sum(1, 2, 3));
+// expected output: 6
+
+console.log(sum(1, 2, 3, 4));
+// expected output: 10
+```
+
+A function's last parameter can be prefixed with ... which will cause all remaining (user supplied) arguments to be placed within a "standard" javascript array. Only the last parameter can be a "rest parameter".
+
+Syntax:
+```
+function f(a, b, ...theArgs) {
+  // ...
+}
+```
+
+Ex:
+```
+function myFun(a, b, ...manyMoreArgs) {
+  console.log("a", a); 
+  console.log("b", b);
+  console.log("manyMoreArgs", manyMoreArgs); 
+}
+
+myFun("one", "two", "three", "four", "five", "six");
+
+// Console Output:
+// a, one
+// b, two
+// manyMoreArgs, [three, four, five, six]
+```
+
+###### Differences between rest parameters and the arguments object:
+
+1. Rest parameters are only the ones that haven't been given a separate name (i.e. formally defined in function expression), while the arguments object contains all arguments passed to the function;
+2. The arguments object is not a real array, while rest parameters are Array instances, meaning methods like sort, map, forEach or pop can be applied on it directly;
+3. The arguments object has additional functionality specific to itself (like the callee property).
+
+###### From arguments to an array
+
+```
+// Before rest parameters, "arguments" could be converted to a normal array using:
+
+function f(a, b) {
+
+  var normalArray = Array.prototype.slice.call(arguments);
+  // -- or --
+  var normalArray = [].slice.call(arguments);
+  // -- or --
+  var normalArray = Array.from(arguments);
+
+  var first = normalArray.shift(); // OK, gives the first argument
+  var first = arguments.shift(); // ERROR (arguments is not a normal array)
+
+}
+
+// Now we can easily gain access to a normal array using a rest parameter
+
+function f(...args) {
+  var normalArray = args;
+  var first = normalArray.shift(); // OK, gives the first argument
+}
+```
+
+###### Destructuring rest parameters
+Rest parameters can be destructured (arrays only), that means that their data can be unpacked into distinct variables.
+Ex:
+```
+function f(...[a, b, c]) {
+  return a + b + c;
+}
+
+f(1)          // NaN (b and c are undefined)
+f(1, 2, 3)    // 6
+f(1, 2, 3, 4) // 6 (the fourth parameter is not destructured)
+```
+
+###### Note:
+JavaScript lets you call a function with an arbitrary array of arguments, using the apply() method of any function object.
+
+```
+f.apply(null, [2, 3, 4]); // 6
+```
+#### Spread syntax
+Spread syntax allows an iterable such as an array expression or string to be expanded in places where zero or more arguments (for function calls) or elements (for array literals) are expected, or an object expression to be expanded in places where zero or more key-value pairs (for object literals) are expected.
+
+Ex:
+
+`myFunction(...iterableObj);`
+
+*For array literals or strings:*
+
+`[...iterableObj, '4', 'five', 6];`
+
+*For object literals (new in ECMAScript 2018):*
+
+`let objClone = { ...obj };`
+
+###### Spread in function calls
+
+It is common to use Function.prototype.apply in cases where you want to use the elements of an array as arguments to a function.
+
+```
+function myFunction(x, y, z) { }
+var args = [0, 1, 2];
+myFunction.apply(null, args);
+```
+will also used like 
+`myFunction(...args);`
+
+Any argument in the argument list can use spread syntax and it can be used multiple times.
+
+```
+function myFunction(v, w, x, y, z) { }
+var args = [0, 1];
+myFunction(-1, ...args, 2, ...[3]);
+```
+##### Apply for new
+
+When calling a constructor with new, it's not possible to directly use an array and apply (apply does a [[Call]] and not a [[Construct]]).
+However, an array can be easily used with new thanks to spread syntax:
+```
+var dateFields = [1970, 0, 1];  // 1 Jan 1970
+var d = new Date(...dateFields);
+```
+To use new with an array of parameters without spread syntax, you would have to do it indirectly through partial application:
+```
+function applyAndNew(constructor, args) {
+   function partial () {
+      return constructor.apply(this, args);
+   };
+   if (typeof constructor.prototype === "object") {
+      partial.prototype = Object.create(constructor.prototype);
+   }
+   return partial;
+}
+
+function myConstructor () {
+   console.log("arguments.length: " + arguments.length);
+   console.log(arguments);
+   this.prop1="val1";
+   this.prop2="val2";
+};
+
+var myArguments = ["hi", "how", "are", "you", "mr", null];
+var myConstructorWithArguments = applyAndNew(myConstructor, myArguments);
+
+console.log(new myConstructorWithArguments);
+// (internal log of myConstructor):           arguments.length: 6
+// (internal log of myConstructor):           ["hi", "how", "are", "you", "mr", null]
+// (log of "new myConstructorWithArguments"): {prop1: "val1", prop2: "val2"}
+```
+Creating using spread syntax:
+```
+console.log(new myConstructor(...myArguments));
+// (internal log of myConstructor):           arguments.length: 6
+// (internal log of myConstructor):           ["hi", "how", "are", "you", "mr", null]
+// (log of "new myConstructorWithArguments"): {prop1: "val1", prop2: "val2"}
+```
+Fiddle link https://jsfiddle.net/re9f62mz/
+
+##### Spread in array literals:
+```
+var parts = ['shoulders', 'knees']; 
+var lyrics = ['head', ...parts, 'and', 'toes']; 
+// ["head", "shoulders", "knees", "and", "toes"]
+```
+*copy an array*
+```
+var arr = [1, 2, 3];
+var arr2 = [...arr]; // like arr.slice()
+arr2.push(4); 
+
+// arr2 becomes [1, 2, 3, 4]
+// arr remains unaffected
+```
+*concat*
+```
+var arr1 = [0, 1, 2];
+var arr2 = [3, 4, 5];
+arr1 = [...arr1, ...arr2]; // arr1 is now [0, 1, 2, 3, 4, 5]
+```
+
+##### Spread in object literals
+*merging objects (shorter than Object.assign)*
+```
+var obj1 = { foo: 'bar', x: 42 };
+var obj2 = { foo: 'baz', y: 13 };
+
+var clonedObj = { ...obj1 };
+// Object { foo: "bar", x: 42 }
+
+var mergedObj = { ...obj1, ...obj2 };
+// Object { foo: "baz", x: 42, y: 13 }
+```
+Note that you cannot replace nor mimic the Object.assign() function.
+
+##### Only for iterables
+Spread syntax (other than in the case of spread properties) can be applied only to iterable objects:
+```
+var obj = {'key1': 'value1'};
+var array = [...obj]; // TypeError: obj is not iterable
+```
+Note: When using spread syntax for function calls, be aware of the possibility of exceeding the JavaScript engine's argument length limit.
 
 
 
