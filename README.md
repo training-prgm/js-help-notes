@@ -528,7 +528,119 @@ Note: When using spread syntax for function calls, be aware of the possibility o
 
 ## Custom objects
 
+```
+function Person(first, last) {
+  this.first = first;
+  this.last = last;
+  this.fullName = function() {
+    return this.first + ' ' + this.last;
+  };
+  this.fullNameReversed = function() {
+    return this.last + ', ' + this.first;
+  };
+}
+var s = new Person('Simon', 'Willison'); 
+```
 
+We have introduced another keyword: new. new is strongly related to this. It creates a brand new empty object, and then calls the function specified, with this set to that new object. Notice though that the function specified with this does not return a value but merely modifies the this object. It's new that returns the this object to the calling site. Functions that are designed to be called by new are called constructor functions. Common practice is to capitalize these functions as a reminder to call them with new.
+
+```
+function personFullName() {
+  return this.first + ' ' + this.last;
+}
+function personFullNameReversed() {
+  return this.last + ', ' + this.first;
+}
+function Person(first, last) {
+  this.first = first;
+  this.last = last;
+  this.fullName = personFullName;
+  this.fullNameReversed = personFullNameReversed;
+}
+```
+That's better: we are creating the method functions only once, and assigning references to them inside the constructor. Can we do any better than that? The answer is yes:
+
+```
+function Person(first, last) {
+  this.first = first;
+  this.last = last;
+}
+Person.prototype.fullName = function() {
+  return this.first + ' ' + this.last;
+};
+Person.prototype.fullNameReversed = function() {
+  return this.last + ', ' + this.first;
+};
+```
+Person.prototype is an object shared by all instances of Person. It forms part of a lookup chain (that has a special name, "prototype chain"): any time you attempt to access a property of Person that isn't set, JavaScript will check Person.prototype to see if that property exists there instead. As a result, anything assigned to Person.prototype becomes available to all instances of that constructor via the this object.
+
+
+Interestingly, you can also add things to the prototype of built-in JavaScript objects. Let's add a method to String that returns that string in reverse:
+
+```
+var s = 'Simon';
+s.reversed(); // TypeError on line 1: s.reversed is not a function
+
+String.prototype.reversed = function() {
+  var r = '';
+  for (var i = this.length - 1; i >= 0; i--) {
+    r += this[i];
+  }
+  return r;
+};
+
+s.reversed(); // nomiS
+```
+Our new method even works on string literals!
+`'This can now be reversed'.reversed(); // desrever eb won nac sihT`
+
+As mentioned before, the prototype forms part of a chain. The root of that chain is Object.prototype, whose methods include toString() — it is this method that is called when you try to represent an object as a string. This is useful for debugging our Person objects:
+
+```
+var s = new Person('Simon', 'Willison');
+s.toString(); // [object Object]
+
+Person.prototype.toString = function() {
+  return '<Person: ' + this.fullName() + '>';
+}
+
+s.toString(); // "<Person: Simon Willison>"
+```
+
+Remember how avg.apply() had a null first argument? We can revisit that now. The first argument to apply() is the object that should be treated as 'this'. For example, here's a trivial implementation of new:
+
+```
+function trivialNew(constructor, ...args) {
+  var o = {}; // Create an object
+  constructor.apply(o, args);
+  return o;
+}
+```
+This isn't an exact replica of new as it doesn't set up the prototype chain (it would be difficult to illustrate). This is not something you use very often, but it's useful to know about. In this snippet, ...args (including the ellipsis) is called the "rest arguments" — as the name implies, this contains the rest of the arguments.
+
+Calling:
+
+`var bill = trivialNew(Person, 'William', 'Orange');`
+
+##### Inner functions
+
+JavaScript function declarations are allowed inside other functions. We've seen this once before, with an earlier makePerson() function. An important detail of nested functions in JavaScript is that they can access variables in their parent function's scope:
+
+```
+function parentFunc() {
+  var a = 1;
+
+  function nestedFunc() {
+    var b = 4; // parentFunc can't use this
+    return a + b; 
+  }
+  return nestedFunc(); // 5
+}
+```
+
+This provides a great deal of utility in writing more maintainable code. If a called function relies on one or two other functions that are not useful to any other part of your code, you can nest those utility functions inside it. This keeps the number of functions that are in the global scope down, which is always a good thing.
+
+This is also a great counter to the lure of global variables. When writing complex code it is often tempting to use global variables to share values between multiple functions — which leads to code that is hard to maintain. Nested functions can share variables in their parent, so you can use that mechanism to couple functions together when it makes sense without polluting your global namespace — "local globals" if you like. This technique should be used with caution, but it's a useful ability to have.
 
 ## Closures
 
@@ -548,34 +660,6 @@ add20(7); // ?
 Whenever JavaScript executes a function, a 'scope' object is created to hold the local variables created within that function. It is initialized with any variables passed in as function parameters. This is similar to the global object that all global variables and functions live in, but with a couple of important differences: firstly, a brand new scope object is created every time a function starts executing, and secondly, unlike the global object (which is accessible as this and in browsers as window) these scope objects cannot be directly accessed from your JavaScript code. There is no mechanism for iterating over the properties of the current scope object, for example.
 
 So when makeAdder() is called, a scope object is created with one property: a, which is the argument passed to the makeAdder() function. makeAdder() then returns a newly created function. Normally JavaScript's garbage collector would clean up the scope object created for makeAdder() at this point, but the returned function maintains a reference back to that scope object. As a result, the scope object will not be garbage-collected until there are no more references to the function object that makeAdder() returned.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 Reference : https://stackoverflow.com/questions/111102/how-do-javascript-closures-work
