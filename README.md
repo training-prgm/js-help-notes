@@ -526,6 +526,8 @@ var array = [...obj]; // TypeError: obj is not iterable
 ```
 Note: When using spread syntax for function calls, be aware of the possibility of exceeding the JavaScript engine's argument length limit.
 
+## Custom objects
+
 
 
 
