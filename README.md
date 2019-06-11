@@ -1,4 +1,4 @@
-# js-help-notes
+﻿# js-help-notes
 
 ## let :
 
@@ -644,7 +644,7 @@ This is also a great counter to the lure of global variables. When writing compl
 
 ## Closures
 
-This leads us to one of the most powerful abstractions that JavaScript has to offer — but also the most potentially confusing. What does this do?
+This leads us to one of the most powerful abstragjsdfhfsdhgsdghgsdfhjdsfghgdsffjhfghjctions that JavaScript has to offer — but also the most potentially confusing. What does this do?
 
 ```
 function makeAdder(a) {
