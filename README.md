@@ -1,4 +1,4 @@
-﻿# js-help-notes
+﻿dfdsfs# js-help-notes
 
 ## let :
 
@@ -19,7 +19,7 @@ while (true) {
   // an infinite loop!
 }
 ```
-
+dgsjfgsdgfjhdgh
 ## do-while loop :
 
 where you wish to ensure that the body of the loop is executed at least once.
